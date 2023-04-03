@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Greg's Fridge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        button {
+            padding: 5px;
+        }
+
+        html {
+            margin: 5px;
+            padding: 5px;
+            font-family: Arial, sans-serif;
+            overflow: scroll;
+        }
+
+        .fridgenotes {
+            position: absolute;
+            display: block;
+            width: 100%;
+
+        }
+
+        .container {
+            margin: 30px 0px;
+        }
+
+        hr {
+            border: #000 solid 0.5px;
+        }
+
+        h1 {
+            padding: 0px 0px 15px 0px;
+        }
+
+        .card-body {
+            padding: 15px 0px 15px 0px;
+            width: 950px;
+        }
+
+        span {
+            border: #000 solid 1px;
+            background-color: #fff;
+            filter: drop-shadow(-1px 1px 1px #000);
+            padding: 6px;
+            margin: 5px 12px 5px 0px;
+        }
+
+        .rotate {
+            float: left;
+            transform-origin: center;
+        }
+
+        a.link,
+        a.link:link,
+        a.link:visited,
+        a.link:hover {
+            text-decoration: underline;
+            color: #0000EE;
+        }
+
+        a.link:active {
+            text-decoration: underline;
+            color: #551A8B;
+        }
+
+        #page-content {
+            width: 950px;
+        }
+
+        @media screen and (max-width: 1000px) {
+            #page-content {
+                width: 100%;
+            }
+
+            .card-body {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="page-content">
+        <h1>Greg's Fridge&nbsp;&#128722;</h1>
+        <p>Leave a <a class="link" target="_blank" href="https://en.wikipedia.org/wiki/Magnetic_Poetry">note</a> on my
+            fridge for anyone to see. Notes are anonymous and anyone can leave one, so please
+            be nice – spam or otherwise insensitive stuff will be removed. My fridge is only so big, so no more than 100
+            characters per note!
+        </p>
+
+        <div class="container">
+            <form id="comments">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <br>
+                    <input id="name" name="name" type="text" class="form-control" autocomplete="off"
+                        style="height:25px;" maxlength="25" required oninput="validate(this)">
+                </div>
+                <br>
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Note</label>
+                    <br>
+                    <textarea id="comment" name="comment" class="form-control" style="height:50px;" maxlength="100"
+                        required oninput="validate(this)"></textarea>
+                </div>
+                <br>
+                <button class="btn btn-outline-primary">Add to fridge</button>
+            </form>
+        </div>
+
+        <hr>
+
+        <div class="fridgenotes">
+
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+            crossorigin="anonymous"></script>
+
+        <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-firestore-compat.js"></script>
+
+        <script>
+            const firebaseConfig = {
+                apiKey: "AIzaSyAtn8NQOHXMIQ7rmxs_ews9mfGY6G5fHJE",
+                authDomain: "comments-d77bb.firebaseapp.com",
+                databaseURL: "https://comments-d77bb-default-rtdb.firebaseio.com",
+                projectId: "comments-d77bb",
+                storageBucket: "comments-d77bb.appspot.com",
+                messagingSenderId: "720879987124",
+                appId: "1:720879987124:web:3234e10aa2b4b7c502aae1"
+            };
+
+            const firebaseApp = firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+
+            const form = document.getElementById('comments');
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                db.collection('comments').add({
+                    name: form.name.value,
+                    time: firebase.firestore.Timestamp.now(),
+                    comment: form.comment.value
+                });
+                form.name.value = '';
+                form.comment.value = '';
+            });
+
+            const div = document.querySelector('.fridgenotes');
+
+            renderList = (doc) => {
+                var main_div = document.createElement('div');
+                var card_body = document.createElement('div');
+                var name = document.createElement('p');
+                var time = document.createElement('p');
+                var comment = document.createElement('p');
+                var linebr = document.createElement('br');
+
+                main_div.setAttribute('class', 'newnote');
+                card_body.setAttribute('class', 'card-body');
+                name.setAttribute('class', 'card-title');
+                time.setAttribute('class', 'card-time');
+                comment.setAttribute('class', 'card-text');
+                linebr.setAttribute('class', 'line-break');
+
+                // Load name, split name, turn name into magnets
+                name.textContent = doc.data().name;
+                const nameWords = name.textContent.split(" ");
+                let nameWithSpans = "";
+
+                for (let i = 0; i < nameWords.length; i++) {
+                    nameWithSpans += "<span class=\"rotate\">" + nameWords[i] + "</span> ";
+                }
+
+                // Load comment, split comment, turn comment into magnets
+                comment.textContent = doc.data().comment.replace(/\s+/g, ' ').trim();
+                const commentWords = comment.textContent.split(" ");
+                let commentWithSpans = "";
+
+                for (let i = 0; i < commentWords.length; i++) {
+                    commentWithSpans += "<span class=\"rotate\">" + commentWords[i] + "</span> ";
+                }
+
+                // Load time, split time, turn time into magnets
+                time.textContent = doc.data().time.toDate().toLocaleDateString();
+                const timeWords = time.textContent.split(" ");
+                let timeWithSpans = "";
+
+                for (let i = 0; i < timeWords.length; i++) {
+                    timeWithSpans += "<span class=\"rotate\">" + timeWords[i] + "</span> ";
+                }
+
+                card_body.insertAdjacentHTML('beforeend', nameWithSpans);
+                card_body.insertAdjacentHTML('beforeend', timeWithSpans + "<br style=\"clear:both\">");
+                card_body.insertAdjacentHTML('beforeend', "<br>");
+                card_body.insertAdjacentHTML('beforeend', commentWithSpans + "<br style=\"clear:both\">");
+                card_body.insertAdjacentHTML('beforeend', "<br>");
+
+                const spans = card_body.querySelectorAll('.rotate');
+                spans.forEach(span => {
+                    const direction = Math.random() < 0.5 ? -5 : 5;
+                    const rotation = direction * Math.random();
+                    span.style.transform = `rotate(${rotation.toFixed(1)}deg)`;
+                });
+
+                main_div.appendChild(card_body);
+                div.prepend(main_div);
+            }
+
+            db.collection('comments').orderBy("time").onSnapshot(snap => {
+                let changes = snap.docChanges();
+                changes.forEach(change => {
+                    if (change.type == 'added') {
+                        renderList(change.doc);
+                    }
+                });
+            });
+
+            var field = document.querySelector('[name="name"]');
+
+            field.addEventListener('keypress', function (event) {
+                var key = event.keyCode;
+                if (key === 32) {
+                    event.preventDefault();
+                }
+            });
+
+            function validate(input) {
+                if (/^\s/.test(input.value))
+                    input.value = '';
+            }
+
+
+        </script>
+    </div>
+</body>
+
+</html>
