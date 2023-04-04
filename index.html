@@ -175,7 +175,7 @@
                 linebr.setAttribute('class', 'line-break');
 
                 // Load name, split name, turn name into magnets
-                name.textContent = doc.data().name;
+                name.textContent = doc.data().name.trim();
                 const nameWords = name.textContent.split(" ");
                 let nameWithSpans = "";
 
